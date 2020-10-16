@@ -7,8 +7,6 @@ jobs:
       - image: circleci/python:3.7.6
     steps:
       - checkout
-      - run: pwd
-      - run: ls
       - run: pip install -r ./flaskproject/requirements.txt
       - run: echo "hello world"
 
@@ -18,7 +16,7 @@ jobs:
       - image: circleci/python:3.7.6
     steps:
       - checkout
-      - run: pip install -r requirements.txt
+      #- run: pip install -r /flaskproject/requirements.txt
       - run: echo "Test Finished"
 
   deploy:
@@ -27,11 +25,12 @@ jobs:
       - image: circleci/python:3.7.6
     steps: # ssh接続して、接続先のdeploy.shを実行する
       - checkout
-      - run: pip install -r requirements.txt
+      #- run: pip install -r requirements.txt
       - add_ssh_keys:
           fingerprints:
-            - "b8:c4:b1:11:bd:a2:3b:05:3b:84:6b:12:07:10:a2:28"
-      - run: ssh -o "StrictHostKeyChecking=no" -p 222 toru@118.27.21.217 "~/deploy.sh"
+            - "eb:fd:b4:77:23:26:9d:71:fa:27:80:16:c3:5f:a8:9a"
+      - run: ssh -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST $COMMAND
+      - run: echo "Deploy Finished"
 
 
 workflows:
@@ -39,12 +38,12 @@ workflows:
   build_and_test: # workflow名
     jobs:
       - build
-      #- test:
-      #    requires: # buildが成功したら実行する
-      #      - build
-      #- deploy:
-      #    requires: # testが成功したら実行する
-      #      - test
-      #    filters: # masterブランチのみjobを実行
-      #      branches:
-      #        only: master
+      - test:
+          requires: # buildが成功したら実行する
+            - build
+      - deploy:
+          requires: # testが成功したら実行する
+            - test
+          filters: # masterブランチのみjobを実行
+            branches:
+              only: master
