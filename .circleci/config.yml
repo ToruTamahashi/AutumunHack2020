@@ -23,7 +23,7 @@ jobs:
     working_directory: ~/circleci-autumnhack
     docker:
       - image: circleci/python:3.7.6
-    steps: # ssh接続して、接続先のdeploy.shを実行する
+    steps:
       - checkout
       #- run: pip install -r requirements.txt
       - add_ssh_keys:
@@ -35,15 +35,15 @@ jobs:
 
 workflows:
   version: 2.1
-  build_and_test: # workflow名
+  build_and_test:
     jobs:
       - build
       - test:
-          requires: # buildが成功したら実行する
+          requires:
             - build
       - deploy:
-          requires: # testが成功したら実行する
+          requires:
             - test
-          filters: # masterブランチのみjobを実行
+          filters:
             branches:
               only: master
