@@ -9,7 +9,8 @@ from .model.models import UserService
 from .model.models import TaskService
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-
+CORS(app, origin=['localhost','hackwebapps.net','autumn.hackwebapps.net'],allow_headers=['Content-Type','Authorization'],
+     methods=['GET', 'POST', 'PUT', 'DELETE'])
 
 
 @app.route('/')
