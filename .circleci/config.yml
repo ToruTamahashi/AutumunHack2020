@@ -14,12 +14,11 @@ jobs:
       - run: echo "hello world"
 
   test:
-    working_directory: ~/circleci-autumnhack
+    working_directory: ~/circleci-autumnhack/flaskproject
     docker:
       - image: circleci/python:3.7.6
     steps:
       - checkout
-      - run: cd flaskproject
       - run: pip install -r requirements.txt
       - run: echo "Test Finished"
 
