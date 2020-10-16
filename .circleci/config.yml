@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - run: pwd
-      - run: ls
+      - run: cd flaskproject
       - run: ls
       - run: pip install -r requirements.txt
       - run: echo "hello world"
@@ -19,6 +19,8 @@ jobs:
       - image: circleci/python:3.7.6
     steps:
       - checkout
+      - run: cd flaskproject
+      - run: pip install -r requirements.txt
       - run: echo "Test Finished"
 
   deploy:
