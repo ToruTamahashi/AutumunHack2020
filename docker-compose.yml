@@ -20,7 +20,8 @@ services:
     depends_on:
       - db
     tty: true
-    command: flask run --host 0.0.0.0 --port 5000
+    #command: flask run --host 0.0.0.0 --port 5000
+    command: sh -c "while ! mysqladmin ping -h db -u root -proot --silent; do sleep 3; done && echo 'mysql running!!!' && flask run --host 0.0.0.0 --port 5000"
 
   db:
     build: ./db
