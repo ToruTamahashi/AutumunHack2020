@@ -2,19 +2,18 @@
 version: 2.1
 jobs:
   build:
-    working_directory: ~/circleci-autumnhack
+    working_directory: ~/circleci-autumnhack/flaskproject
     docker:
       - image: circleci/python:3.7.6
     steps:
       - checkout
       - run: pwd
-      - run: cd flaskproject
       - run: ls
       - run: pip install -r requirements.txt
       - run: echo "hello world"
 
   test:
-    working_directory: ~/circleci-autumnhack/flaskproject
+    working_directory: ~/circleci-autumnhack
     docker:
       - image: circleci/python:3.7.6
     steps:
