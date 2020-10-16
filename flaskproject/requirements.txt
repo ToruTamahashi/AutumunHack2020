@@ -3,3 +3,4 @@ requests
 sqlalchemy
 #mysql-connector-python
 pymysql
+flask-cors

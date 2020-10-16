@@ -1,7 +1,7 @@
-import json
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask_cors import CORS
 
 from .model.models import UserEntity
 from .model.models import TaskEntity
@@ -11,7 +11,8 @@ from .develop.self_req import get_req
 from .develop.self_req import post_req
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-
+CORS(app, origin=['localhost','hackwebapps.net','autumn.hackwebapps.net'],allow_headers=['Content-Type','Authorization'],
+     methods=['GET', 'POST', 'PUT', 'DELETE'])
 
 
 @app.route('/')
