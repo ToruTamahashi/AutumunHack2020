@@ -1,0 +1,49 @@
+
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/circleci-autumnhack
+    docker:
+      - image: circleci/python:3.7.6
+    steps:
+      - checkout
+      - run: pip install -r ./flaskproject/requirements.txt
+      - run: echo "hello world"
+
+  test:
+    working_directory: ~/circleci-autumnhack
+    docker:
+      - image: circleci/python:3.7.6
+    steps:
+      - checkout
+      #- run: pip install -r /flaskproject/requirements.txt
+      - run: echo "Test Finished"
+
+  deploy:
+    working_directory: ~/circleci-autumnhack
+    docker:
+      - image: circleci/python:3.7.6
+    steps:
+      - checkout
+      #- run: pip install -r requirements.txt
+      - add_ssh_keys:
+          fingerprints:
+            - "eb:fd:b4:77:23:26:9d:71:fa:27:80:16:c3:5f:a8:9a"
+      - run: ssh -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST $COMMAND
+      - run: echo "Deploy Finished"
+
+
+workflows:
+  version: 2.1
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
