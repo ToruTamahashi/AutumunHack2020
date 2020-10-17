@@ -148,6 +148,7 @@ class UserService(object):
 class TaskService(object):
     def find_all(self):
         tasks = session.query(TaskEntity).all()
+        print(tasks)
         task_info=[]
         for task in tasks:
             task_change = task.task_entity_dict()
@@ -196,14 +197,11 @@ class TaskService(object):
         :param id: int
         :return: 正常終了：updしたid,  例外発生：error
         """
-        try:
-            task = session.query(TaskEntity).filter(TaskEntity.id == id).first()
-            task = upd_task_entity
-            session.commit()
-            return id
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        task = session.query(TaskEntity).get(int(id))
+        up_task = task.task_entity_dict()
+        up_task = upd_task_entity
+        session.commit()
+        return up_task
 
     def delete(self, id):
         """
