@@ -91,7 +91,6 @@ class UserService(object):
         users = session.query(UserEntity).all()
         users_find_id = users[int(id)-1].user_entity_dict()
         return users_find_id
-        
         # try:
         #     user = session.query(UserEntity).filter(UserEntity.id == id).all()
         #     return user[0]
