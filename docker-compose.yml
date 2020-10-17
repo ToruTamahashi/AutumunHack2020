@@ -1,14 +1,14 @@
-version: '3'
+version: "3"
 services:
   vue:
-    build: ./vueproject
-    ports:
-      - 8888:8080
-    volumes:
-      - ./vueproject:/app
-      - ./vueproject/n_modules:/app/node_modules
-    stdin_open: true
-    tty: true
+      build: ./vueproject
+      ports:
+          - 8888:8080
+      volumes:
+          - ./vueproject:/app
+          - ./vueproject/n_modules:/app/node_modules
+      stdin_open: true
+      tty: true
     #command: npm run serve
 
   flask:
@@ -37,7 +37,5 @@ services:
       - ./db/sql:/docker-entrypoint-sql
       - ./db/log:/var/log/mysql
 
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
-
-
+    #command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
 
