@@ -30,6 +30,17 @@ class UserEntity(Base):
     #tasklist = relationship("TaskEntity", back_populates="user")
     # relationship({参照する側のクラス名}, backref={tablename})
 
+    def user_entity_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'access_token': self.access_token,
+            'access_token_secret': self.access_token_secret,
+            'secret_word': self.secret_word,
+            'create_at': self.create_at,
+            'update_at': self.update_at,
+        }
+
 
 
 class TaskEntity(Base):
@@ -77,12 +88,15 @@ class UserService(object):
         :return: UserEntity
         """
         # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        try:
-            user = session.query(UserEntity).filter(UserEntity.id == id).all()
-            return user[0]
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        users = session.query(UserEntity).all()
+        users_find_id = users[int(id)-1].user_entity_dict()
+        return users_find_id
+        # try:
+        #     user = session.query(UserEntity).filter(UserEntity.id == id).all()
+        #     return user[0]
+        # except Exception as ex:
+        #     print("Exception:{}".format(ex))
+        #     return "error"
 
     def create(self, user_entiy):
         """
@@ -158,12 +172,6 @@ class TaskService(object):
             else:
                 print("no data")
         return task_info
-        # try:
-        #     task = session.query(TaskEntity).filter(TaskEntity.id == id).all()
-        #     return task[0]
-        # except Exception as ex:
-        #     print("Exception:{}".format(ex))
-        #     return "error"
 
     def create(self, task_entity):
         """
