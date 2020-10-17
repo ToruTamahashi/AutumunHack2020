@@ -29,7 +29,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "eb:fd:b4:77:23:26:9d:71:fa:27:80:16:c3:5f:a8:9a"
-      - run: ssh -o "StrictHostKeyChecking=no" $USER_NAME@$HOST_NAME $COMMAND
+      - run: ssh -o "StrictHostKeyChecking=no" $USER_NAME@$HOST_NAME "touch tmp.txt"
       - run: echo "Deploy Finished"
 
 
