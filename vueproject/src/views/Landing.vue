@@ -14,9 +14,20 @@
           src="../assets/top-image.png"
         ></v-img>
         <v-col>
-          <h1 class="mb-10 font-weight-black white--text">自分を追い込むたった一つの方法</h1>
-          <p class="mb-10 font-weight-black white--text">当サービスは、秘密を書き込み決められた時間にタスクが終わらな買った場合、強制的にTwitterに書き込まれるクレイジーでストイックなサービスです。</p>
-          <v-btn class="cyan accent-3 black--text font-weight-regular" depressed elevation="15" raised rounded x-large
+          <h1 class="mb-10 font-weight-black white--text">
+            自分を追い込むたった一つの方法
+          </h1>
+          <p class="mb-10 font-weight-black white--text">
+            当サービスは、秘密を書き込み決められた時間にタスクが終わらな買った場合、強制的にTwitterに書き込まれるクレイジーでストイックなサービスです。
+          </p>
+          <v-btn
+            @click="getCreateUrl()"
+            class="cyan accent-3 black--text font-weight-regular"
+            depressed
+            elevation="15"
+            raised
+            rounded
+            x-large
             >時間の達人になる</v-btn
           >
         </v-col>
@@ -27,12 +38,10 @@
 
 <script>
 export default {
-  theme: {
-    themes: {
-      light: {
-        background: "f5f5f5",
-      },
-    },
-  },
+  methods: {
+    getCreateUrl() {
+      location.href = "https://google.com"
+    }
+  }
 };
 </script>
