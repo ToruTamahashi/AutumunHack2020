@@ -284,7 +284,7 @@ export default {
           const tweetTaskId = task.id;
           console.log(tweetTaskId);
           // バックエンドにid渡してツイート要請
-          axios.get("/task/tweetTaskId").then((res) => {
+          axios.get(`/task/${tweetTaskId}`).then((res) => {
             const tweetedExpiredTask = res.data.tweetedExpiredTask;
             if (tweetedExpiredTask === 0) {
               // まだツイートしていない
