@@ -9,11 +9,12 @@ from .model.models import UserService
 from .model.models import TaskService
 from .develop.self_req import get_req
 from .develop.self_req import post_req
+from .develop.auto_tweet import TwitterAPI
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 CORS(app, origin=['localhost','hackwebapps.net','autumn.hackwebapps.net'],allow_headers=['Content-Type','Authorization'],
      methods=['GET', 'POST', 'PUT', 'DELETE'])
-
+twitter = TwitterAPI()
 
 @app.route('/')
 def hello_world():
@@ -65,6 +66,27 @@ def self_request():
     res = post_req()
     #res = get_req()
     return res.text
+
+@app.route('/login', methods=['GET'])
+def login():
+    """
+    Twitter認証画面にリダイレクトさせるurlを返します
+    :return: String
+    """
+    redirect_url = twitter.get_redirect_url()
+    return redirect_url
+
+@app.route('/get_task', methods=['POST'])
+def get_task():
+    """
+    oauth_verifierを受け取ってユーザ認証完了したらタスク一覧を返す
+    :return:json
+    """
+    json_dict = request.get_json(force=True)
+    print(json_dict['oauth_verifier'])
+    #twitter.post_verifier(json_dict['oauth_verifier'])
+    #twitter.post_tweet()
+    return "a"
 
 def main():
     app.debug = True
