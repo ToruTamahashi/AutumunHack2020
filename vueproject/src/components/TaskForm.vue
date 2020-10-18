@@ -61,6 +61,9 @@ export default {
     fullDate() {
       return new Date(`${this.date}/${this.time}:00`);
     },
+    fullDateString() {
+      return `${this.date}/${this.time}:00`
+    }
   },
   created() {
     const date = new Date();
@@ -91,7 +94,7 @@ export default {
       console.log({
         task: this.task,
         email: this.email,
-        deadLine: this.fullDate,
+        deadLine: this.fullDateString,
         tweet: this.checkbox,
       });
       console.log("Submit!");
