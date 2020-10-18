@@ -34,6 +34,7 @@
 <script>
 import DatePicker from "./DatePicker.vue";
 import TimePicker from "./TimePicker.vue";
+import axios from "axios"
 
 export default {
   components: {
@@ -56,6 +57,7 @@ export default {
     checkbox: false,
     date: null,
     time: "",
+    responseTaskList: []
   }),
   computed: {
     fullDate() {
@@ -91,13 +93,16 @@ export default {
     },
     submit() {
       // axiosで送信処理をする
-      console.log({
+      axios.post("保存用リンク", {
         task: this.task,
         email: this.email,
         deadLine: this.fullDateString,
         tweet: this.checkbox,
-      });
-      console.log("Submit!");
+        tweetedExpiredTask: 0
+      }).then(res => {
+        this.responseTaskList = res.data
+        this.passTaskListAfterAddTask(res.data)
+      })
       this.task = "";
       this.email = "";
       this.$refs.form.resetValidation();
@@ -115,6 +120,9 @@ export default {
 
       return format;
     },
+    passTaskListAfterAddTask(data) {
+      this.$emit("passTaskListAfterAddTask", data)
+    }
   },
 };
 </script>

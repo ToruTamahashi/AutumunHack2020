@@ -26,6 +26,7 @@
               ref="taskform"
               @submitFromTaskForm="save"
               @closeFromTaskForm="close"
+              @passTaskListAfterAddTask="updateTaskListAfterAddTask"
             />
           </v-card>
         </v-dialog>
@@ -69,7 +70,7 @@
 
 <script>
 import TaskForm from "./TaskForm.vue";
-import axios from "axios"
+import axios from "axios";
 
 const dayfullMilliseconds = 1000 * 60 * 60 * 24;
 const hourMilliseconds = 1000 * 60 * 60;
@@ -86,6 +87,10 @@ export default {
     dialogDelete: false,
     headers: [
       {
+        text: "ID",
+        value: "id",
+      },
+      {
         text: "タスク",
         align: "start",
         sortable: false,
@@ -98,18 +103,30 @@ export default {
     editedItem: {
       name: "",
       limit: 0,
+      id: "",
     },
     defaultItem: {
       name: "",
       limit: 0,
     },
     now: new Date(),
+    taskData: [],
   }),
   created() {
-    axios.get("http://localhost:5000/json")
-    .then((res) => {console.log(res)})
+    axios.get("http://localhost:5000/json").then((res) => {
+      res.data.forEach((task) => {
+        this.tasks.push({
+          name: task.name,
+          limit: this.msToTime(new Date(task.deadLine)),
+          id: task.id,
+        });
+      });
+    });
+    this.sendOauthVerifier(this.$route.query.oauth_verifier);
+
+    this.findExpiredTask();
   },
- 
+
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
@@ -119,59 +136,38 @@ export default {
       return [
         {
           name: "課題",
-          limit: `${this.getLimitDay(new Date("2020/10/31/06:22:18"))}日
-                  ${this.getLimitHours(new Date("2020/10/31/06:22:18"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/31/06:22:18"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/31/06:22:18"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/16/12:30:00")),
+          id: 1,
         },
         {
           name: "プログラミングする",
-          limit: `${this.getLimitDay(new Date("2020/10/22/12:30:22"))}日
-                  ${this.getLimitHours(new Date("2020/10/22/12:30:22"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/22/12:30:22"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/22/12:30:22"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/9:30:00")),
+          id: 2,
         },
         {
           name: "ES提出",
-          limit: `${this.getLimitDay(new Date("2020/10/24/17:12:58"))}日
-                  ${this.getLimitHours(new Date("2020/10/24/17:12:58"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/24/17:12:58"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/24/17:12:58"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/11:22:00")),
+          id: 3,
         },
         {
           name: "英単語100個",
-          limit: `${this.getLimitDay(new Date("2020/10/26/22:00:00"))}日
-                  ${this.getLimitHours(new Date("2020/10/26/22:00:00"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/26/22:00:00"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/26/22:00:00"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/17:00:00")),
+          id: 4,
         },
         {
           name: "書類提出",
-          limit: `${this.getLimitDay(new Date("2020/11/3/07:00:30"))}日
-                  ${this.getLimitHours(new Date("2020/11/3/07:00:30"))}時
-                  ${this.getLimitMinutes(new Date("2020/11/3/07:00:30"))}分
-                  ${this.getLimitSeconds(new Date("2020/11/3/07:00:30"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/10:25:00")),
+          id: 5,
         },
         {
           name: "ランニング10km",
-          limit: `${this.getLimitDay(new Date("2020/10/23/03:15:40"))}日
-                  ${this.getLimitHours(new Date("2020/10/23/03:15:40"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/23/03:15:40"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/23/03:15:40"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/9:40:00")),
+          id: 6,
         },
         {
           name: "友達と遊ぶ",
-          limit: `${this.getLimitDay(new Date("2020/10/30/09:48:13"))}日
-                  ${this.getLimitHours(new Date("2020/10/30/09:48:13"))}時
-                  ${this.getLimitMinutes(new Date("2020/10/30/09:48:13"))}分
-                  ${this.getLimitSeconds(new Date("2020/10/30/09:48:13"))}秒
-                  `,
+          limit: this.msToTime(new Date("2020/10/21/22:00:30")),
+          id: 7,
         },
       ];
     },
@@ -189,7 +185,7 @@ export default {
         if (value > 0) {
           setTimeout(() => {
             this.now = new Date();
-          }, 1000);
+          }, 1000 * 60);
         }
       },
       immediate: true,
@@ -204,16 +200,30 @@ export default {
     },
 
     deleteItem(item) {
-      this.checkbox = false
+      this.checkbox = false;
       this.editedIndex = this.tasks.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
+      axios
+        .delete("削除用リンク", {
+          id: item.id,
+        })
+        .then((res) => {
+          res.data.forEach((task) => {
+            this.tasks = []
+            this.tasks.push({
+              name: task.name,
+              limit: this.msToTime(new Date(task.deadLine)),
+              id: task.id,
+            });
+          });
+        });
     },
 
     deleteItemConfirm() {
       this.tasks.splice(this.editedIndex, 1);
       if (this.checkbox) {
-        console.log("Tweet task complete!")
+        console.log("Tweet task complete!");
       }
       this.closeDelete();
     },
@@ -246,53 +256,70 @@ export default {
       this.close();
     },
 
-    getLimitDay(date) {
-      const limitDateMilliseconds = date.getTime() - this.now.getTime();
-      return Math.floor(limitDateMilliseconds / dayfullMilliseconds);
-    },
+    msToTime(date) {
+      const duration = date.getTime() - this.now.getTime();
+      if (duration < 0) {
+        return "期限切れ";
+      }
 
-    getLimitHours(date) {
-      const limitDateMilliseconds = date.getTime() - this.now.getTime();
-      const day = Math.floor(limitDateMilliseconds / dayfullMilliseconds);
-      return Math.floor(
-        (limitDateMilliseconds - day * dayfullMilliseconds) / hourMilliseconds
+      const day = Math.floor(duration / dayfullMilliseconds);
+      const hour = Math.floor(
+        (duration - dayfullMilliseconds * day) / hourMilliseconds
       );
-    },
-
-    getLimitMinutes(date) {
-      const limitDateMilliseconds = date.getTime() - this.now.getTime();
-      const day = Math.floor(limitDateMilliseconds / dayfullMilliseconds);
-      const hours = Math.floor(
-        (limitDateMilliseconds - day * dayfullMilliseconds) / hourMilliseconds
-      );
-      return Math.floor(
-        (limitDateMilliseconds -
-          day * dayfullMilliseconds -
-          hours * hourMilliseconds) /
+      const minute = Math.floor(
+        (duration - dayfullMilliseconds * day - hourMilliseconds * hour) /
           minuteMilliseconds
       );
+
+      const hh = ("00" + hour).slice(-2);
+      const mm = ("00" + minute).slice(-2);
+      // const ms = ("00000" + (duration % 60000)).slice(-5);
+
+      const time = `${String(day).padStart(2, "0")}日${hh}時${mm}分`;
+
+      return time;
     },
 
-    getLimitSeconds(date) {
-      const limitDateMilliseconds = date.getTime() - this.now.getTime();
-      const day = Math.floor(limitDateMilliseconds / dayfullMilliseconds);
-      const hours = Math.floor(
-        (limitDateMilliseconds - day * dayfullMilliseconds) / hourMilliseconds
-      );
-      const minutes = Math.floor(
-        (limitDateMilliseconds -
-          day * dayfullMilliseconds -
-          hours * hourMilliseconds) /
-          minuteMilliseconds
-      );
-      return Math.floor(
-        (limitDateMilliseconds -
-          day * dayfullMilliseconds -
-          hours * hourMilliseconds -
-          minutes * minuteMilliseconds) /
-          1000
-      );
+    findExpiredTask() {
+      this.tasks.forEach((task) => {
+        if (task.limit === "期限切れ") {
+          const tweetTaskId = task.id;
+          console.log(tweetTaskId);
+          // バックエンドにid渡してツイート要請
+          axios.get("http://localhost:5000/task/tweetTaskId").then((res) => {
+            const tweetedExpiredTask = res.data.tweetedExpiredTask;
+            if (tweetedExpiredTask === 0) {
+              // まだツイートしていない
+              // id添えてツイートするようpostリクエスト送る
+              axios.put("idでタスクを検索する", {
+                tweetedExpiredTask: 1,
+              });
+            }
+          });
+        }
+      });
     },
+
+    sendOauthVerifier(query) {
+      axios
+        .post("link", {
+          token: query,
+        })
+        .then((res) => {
+          this.taskData = res;
+        });
+    },
+
+    updateTaskListAfterAddTask(data) { // 送信後のres.data
+    this.tasks = []
+      data.forEach((task) => {
+        this.tasks.push({
+          name: task.name,
+          limit: this.msToTime(new Date(task.deadLine)),
+          id: task.id,
+        });
+      });
+    }
   },
 };
 </script>
