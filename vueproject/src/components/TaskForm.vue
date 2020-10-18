@@ -93,7 +93,7 @@ export default {
     },
     submit() {
       // axiosで送信処理をする
-      axios.post("保存用リンク", {
+      axios.post("/task/create/add", {
         task: this.task,
         email: this.email,
         deadLine: this.fullDateString,

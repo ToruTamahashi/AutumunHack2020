@@ -113,7 +113,7 @@ export default {
     taskData: [],
   }),
   created() {
-    axios.get("http://localhost:5000/json").then((res) => {
+    axios.get("/json").then((res) => {
       res.data.forEach((task) => {
         this.tasks.push({
           name: task.name,
@@ -205,9 +205,7 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
       axios
-        .delete("削除用リンク", {
-          id: item.id,
-        })
+        .delete(`/task/delete/${item.id}`)
         .then((res) => {
           res.data.forEach((task) => {
             this.tasks = []
@@ -286,12 +284,12 @@ export default {
           const tweetTaskId = task.id;
           console.log(tweetTaskId);
           // バックエンドにid渡してツイート要請
-          axios.get("http://localhost:5000/task/tweetTaskId").then((res) => {
+          axios.get("/task/tweetTaskId").then((res) => {
             const tweetedExpiredTask = res.data.tweetedExpiredTask;
             if (tweetedExpiredTask === 0) {
               // まだツイートしていない
               // id添えてツイートするようpostリクエスト送る
-              axios.put("idでタスクを検索する", {
+              axios.put(`/task/update/${tweetTaskId}`, {
                 tweetedExpiredTask: 1,
               });
             }
