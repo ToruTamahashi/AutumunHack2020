@@ -1,9 +1,8 @@
 import sqlalchemy
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 from sqlalchemy.orm import relationship
-
 
 USERNAME = 'root'
 PASSWORD = 'root'
@@ -22,8 +21,7 @@ class UserEntity(Base):
     __tablename__ = 'user'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String(30))
-    access_token = sqlalchemy.Column(sqlalchemy.String(255))
-    access_token_secret = sqlalchemy.Column(sqlalchemy.String(255))
+    twitter_id = sqlalchemy.Column(sqlalchemy.String(255))
     secret_word = sqlalchemy.Column(sqlalchemy.String(255))
     create_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     update_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
@@ -34,8 +32,7 @@ class UserEntity(Base):
         return {
             'id': self.id,
             'name': self.name,
-            'access_token': self.access_token,
-            'access_token_secret': self.access_token_secret,
+            'twitter_id': self.twitter_id,
             'secret_word': self.secret_word,
             'create_at': self.create_at,
             'update_at': self.update_at,
@@ -89,22 +86,34 @@ class UserService(object):
         """
         # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
         users = session.query(UserEntity).all()
-        users_find_id = users[int(id)-1].user_entity_dict()
-        return users_find_id
+        print(users)
+        return "ure"
+        # user_info=[]
+        # for user in users:
+        #     user_change = user.user_entity_dict()
+        #     if user_change['id'] == int(id):
+        #         user_info.append(user_change)
+        # return user_info
 
-    def create(self, user_entiy):
+    def create(self, user_entity):
         """
           # userテーブル挿入
         :param user_entiy: UserEntity
         :return: 正常終了：ok , 例外発生：error
         """
-        try:
-            session.add(user_entiy)
-            session.commit()
-            return "ok"
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        a = user_entity["name"]
+        user = UserEntity(name=f"{a}")
+        session.add(user)
+        session.commit()
+        return "success"
+
+        # users = session.query(UserEntity).all()
+        # user_info=[]
+        # for user in users:
+        #     user_change = user.user_entity_dict()
+        #     user_info.append(user_change)
+        # user_info.append(user_entiy)
+        # return user_info
 
     def update(self,upd_user_entity,id):
         """
@@ -169,14 +178,14 @@ class TaskService(object):
         :param task_entiy: TaskEntity
         :return: 正常終了：ok , 例外発生：error
         """
-
-        try:
-            session.add(task_entity)
-            session.commit()
-            return "ok"
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        # 現在時刻を取得
+        JST = timezone(timedelta(hours=+9), 'JST')
+        time_now = datetime.now(JST).strftime('%Y/%m/%d/%H:%M:%S')
+        a = task_entity["title"]
+        task = TaskEntity(title=f"{a}",create_at=f"{time_now}")
+        session.add(task)
+        session.commit()
+        return "success"
 
 
     def update(self,upd_task_entity,id):
@@ -186,11 +195,15 @@ class TaskService(object):
         :param id: int
         :return: 正常終了：updしたid,  例外発生：error
         """
+        JST = timezone(timedelta(hours=+9), 'JST')
+        time_now = datetime.now(JST).strftime('%Y/%m/%d/%H:%M:%S')
         task = session.query(TaskEntity).get(int(id))
-        up_task = task.task_entity_dict()
-        up_task = upd_task_entity
+        a = upd_task_entity["title"]
+        task.title = a
+        task.update_at = time_now
         session.commit()
-        return up_task
+        return "success"
+
 
     def delete(self, id):
         """
@@ -198,11 +211,8 @@ class TaskService(object):
         :param id: int
         :return: 正常終了：削除したid  例外発生：error
         """
-        tasks = session.query(TaskEntity).all()
-        task_info=[]
-        for task in tasks:
-            task_change = task.task_entity_dict()
-            if task_change["id"] != int(id):
-                task_info.append(task_change)
-        return task_info
+        task = session.query(TaskEntity).get(int(id))
+        session.delete(task)
+        session.commit()
+        return "success"
 
