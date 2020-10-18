@@ -119,15 +119,19 @@ class UserService(object):
         :param id: int
         :return: 正常終了：updしたid,  例外発生：error
         """
-        try:
+        user = session.query(UserEntity).get(int(id))
+        up_user = user.user_entity_dict()
+        up_user = upd_user_entity
+        return up_user
             # userテーブルから指定のidに該当する行をフィルタリングし抽出結果をfirst()で返す
-            user = session.query(UserEntity).filter(UserEntity.id == id).first()
-            user = upd_user_entity
-            session.commit()
-            return id
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        # try:
+        #     user = session.query(UserEntity).filter(UserEntity.id == id).first()
+        #     user = upd_user_entity
+        #     session.commit()
+        #     return id
+        # except Exception as ex:
+        #     print("Exception:{}".format(ex))
+        #     return "error"
 
     def delete(self, id):
         """
@@ -148,7 +152,6 @@ class UserService(object):
 class TaskService(object):
     def find_all(self):
         tasks = session.query(TaskEntity).all()
-        print(tasks)
         task_info=[]
         for task in tasks:
             task_change = task.task_entity_dict()
@@ -209,11 +212,11 @@ class TaskService(object):
         :param id: int
         :return: 正常終了：削除したid  例外発生：error
         """
-        try:
-            session.query(TaskEntity).filter(TaskEntity.id == id).delete()
-            session.commit()
-            return id
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        tasks = session.query(TaskEntity).all()
+        task_info=[]
+        for task in tasks:
+            task_change = task.task_entity_dict()
+            if task_change["id"] != int(id):
+                task_info.append(task_change)
+        return task_info
 
