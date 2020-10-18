@@ -86,14 +86,12 @@ class UserService(object):
         """
         # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
         users = session.query(UserEntity).all()
-        print(users)
-        return "ure"
-        # user_info=[]
-        # for user in users:
-        #     user_change = user.user_entity_dict()
-        #     if user_change['id'] == int(id):
-        #         user_info.append(user_change)
-        # return user_info
+        user_info=[]
+        for user in users:
+            user_change = user.user_entity_dict()
+            if user_change['id'] == int(id):
+                user_info.append(user_change)
+        return user_info
 
     def create(self, user_entity):
         """
