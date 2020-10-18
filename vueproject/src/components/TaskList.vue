@@ -69,6 +69,7 @@
 
 <script>
 import TaskForm from "./TaskForm.vue";
+import axios from "axios"
 
 const dayfullMilliseconds = 1000 * 60 * 60 * 24;
 const hourMilliseconds = 1000 * 60 * 60;
@@ -104,7 +105,11 @@ export default {
     },
     now: new Date(),
   }),
-
+  created() {
+    axios.get("http://localhost:5000/json")
+    .then((res) => {console.log(res)})
+  },
+ 
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
