@@ -1,5 +1,7 @@
 import requests
 
+
+
 def get_req():
     r = requests.get(
         'http://localhost:5000/get?value=111'
