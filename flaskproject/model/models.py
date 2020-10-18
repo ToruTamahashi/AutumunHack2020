@@ -91,12 +91,6 @@ class UserService(object):
         users = session.query(UserEntity).all()
         users_find_id = users[int(id)-1].user_entity_dict()
         return users_find_id
-        # try:
-        #     user = session.query(UserEntity).filter(UserEntity.id == id).all()
-        #     return user[0]
-        # except Exception as ex:
-        #     print("Exception:{}".format(ex))
-        #     return "error"
 
     def create(self, user_entiy):
         """
@@ -119,19 +113,11 @@ class UserService(object):
         :param id: int
         :return: 正常終了：updしたid,  例外発生：error
         """
+        # userテーブルから指定のidに該当する行を更新
         user = session.query(UserEntity).get(int(id))
         up_user = user.user_entity_dict()
         up_user = upd_user_entity
         return up_user
-            # userテーブルから指定のidに該当する行をフィルタリングし抽出結果をfirst()で返す
-        # try:
-        #     user = session.query(UserEntity).filter(UserEntity.id == id).first()
-        #     user = upd_user_entity
-        #     session.commit()
-        #     return id
-        # except Exception as ex:
-        #     print("Exception:{}".format(ex))
-        #     return "error"
 
     def delete(self, id):
         """
