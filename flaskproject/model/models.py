@@ -11,7 +11,7 @@ HOST = 'db'
 PORT = '3306'
 DATABASE = 'autumn_hack'
 
-url = 'mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8'.format(USERNAME, PASSWORD, HOST, PORT, DATABASE)
+url = 'mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(USERNAME, PASSWORD, HOST, PORT, DATABASE)
 #url = 'mysql+pymysql://root:root@localhost:3333/autumn_hack?charset=utf8'
 engine = sqlalchemy.create_engine(url, echo=True)
 Base = sqlalchemy.ext.declarative.declarative_base()
@@ -30,6 +30,17 @@ class UserEntity(Base):
     #tasklist = relationship("TaskEntity", back_populates="user")
     # relationship({参照する側のクラス名}, backref={tablename})
 
+    def user_entity_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'access_token': self.access_token,
+            'access_token_secret': self.access_token_secret,
+            'secret_word': self.secret_word,
+            'create_at': self.create_at,
+            'update_at': self.update_at,
+        }
+
 
 
 class TaskEntity(Base):
@@ -43,6 +54,18 @@ class TaskEntity(Base):
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('user.id'))
     user = relationship("UserEntity")
     # userにはuser_idに該当したUserEntityが入る
+
+    def task_entity_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'declaration_tweet': self.declaration_tweet,
+            'deadline_at': self.deadline_at,
+            'create_at': self.create_at,
+            'update_at': self.update_at,
+            'user_id': self.user_id,
+        }
+
 
 
 Base.metadata.create_all(engine)
@@ -65,12 +88,15 @@ class UserService(object):
         :return: UserEntity
         """
         # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        try:
-            user = session.query(UserEntity).filter(UserEntity.id == id).all()
-            return user[0]
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        users = session.query(UserEntity).all()
+        users_find_id = users[int(id)-1].user_entity_dict()
+        return users_find_id
+        # try:
+        #     user = session.query(UserEntity).filter(UserEntity.id == id).all()
+        #     return user[0]
+        # except Exception as ex:
+        #     print("Exception:{}".format(ex))
+        #     return "error"
 
     def create(self, user_entiy):
         """
@@ -121,7 +147,13 @@ class UserService(object):
 
 class TaskService(object):
     def find_all(self):
-        return session.query(TaskEntity).all()
+        tasks = session.query(TaskEntity).all()
+        task_info=[]
+        for task in tasks:
+            task_change = task.task_entity_dict()
+            task_info.append(task_change)
+        return task_info
+
 
     def find(self, id):
         """
@@ -130,12 +162,16 @@ class TaskService(object):
         :return: TaskEntity
         """
         # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        try:
-            task = session.query(TaskEntity).filter(TaskEntity.id == id).all()
-            return task[0]
-        except Exception as ex:
-            print("Exception:{}".format(ex))
-            return "error"
+        tasks = session.query(TaskEntity).all()
+        task_info=[]
+        for task in tasks:
+            task_change = task.task_entity_dict()
+            if task_change['user_id'] == int(id):
+                task_info.append(task_change)
+                print("in data")
+            else:
+                print("no data")
+        return task_info
 
     def create(self, task_entity):
         """
@@ -143,6 +179,7 @@ class TaskService(object):
         :param task_entiy: TaskEntity
         :return: 正常終了：ok , 例外発生：error
         """
+
         try:
             session.add(task_entity)
             session.commit()

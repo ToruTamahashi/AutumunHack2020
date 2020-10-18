@@ -37,7 +37,5 @@ services:
       - ./db/sql:/docker-entrypoint-sql
       - ./db/log:/var/log/mysql
 
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
-
-
+    #command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
 

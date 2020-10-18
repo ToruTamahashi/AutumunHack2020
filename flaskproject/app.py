@@ -17,7 +17,7 @@ CORS(app, origin=['localhost','hackwebapps.net','autumn.hackwebapps.net'],allow_
 
 @app.route('/')
 def hello_world():
-    return 'helloworld-2'
+    return 'helloworld!!!'
 
 
 @app.route('/get', methods=['GET'])
@@ -46,13 +46,19 @@ def show_json():
     Userテーブルからデータをすべて取って返す
     :return json
     """
-    us = UserService()
-    array = us.find_all()
-    a = array[0]
-    print(a.name)
+    ts = TaskService()
+    a = ts.find_all()
+    print(a[0]["id"])
     #a_dict = {key: value for key, value in a.__dict__.items()}
-    a_dict = a.__dict__
-    return str(a_dict)
+    return jsonify(str(a))
+
+@app.route('/task/<id>')
+def id_world(id):
+    ts = TaskService()
+    a = ts.find(id)
+    # print(a[0])
+    return jsonify(str(a))
+    # return jsonify(str(a))
 
 @app.route('/req')
 def self_request():
