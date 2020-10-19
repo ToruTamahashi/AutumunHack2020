@@ -10,6 +10,12 @@ HOST = 'db'
 PORT = '3306'
 DATABASE = 'autumn_hack'
 
+# USERNAME = 'root'
+# PASSWORD = 'root'
+# HOST = 'localhost'
+# PORT = '3333'
+# DATABASE = 'autumn_hack'
+
 url = 'mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(USERNAME, PASSWORD, HOST, PORT, DATABASE)
 #url = 'mysql+pymysql://root:root@localhost:3333/autumn_hack?charset=utf8'
 engine = sqlalchemy.create_engine(url, echo=True)
@@ -21,7 +27,7 @@ class UserEntity(Base):
     __tablename__ = 'user'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String(30))
-    twitter_id = sqlalchemy.Column(sqlalchemy.String(255))
+    twitter_id = sqlalchemy.Column(sqlalchemy.String(30))
     secret_word = sqlalchemy.Column(sqlalchemy.String(255))
     create_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     update_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
@@ -78,20 +84,26 @@ class UserService(object):
         """
         return session.query(UserEntity).all()
 
-    def find(self, id):
+    def find(self, twitter_id):
         """
           #  userテーブルから該当するidを持つ行を取得
         :param id: int
         :return: UserEntity
         """
-        # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        users = session.query(UserEntity).all()
-        user_info=[]
-        for user in users:
-            user_change = user.user_entity_dict()
-            if user_change['id'] == int(id):
-                user_info.append(user_change)
-        return user_info
+        # twitter_idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
+        # try:
+        #     user = session.query(UserEntity).filter(UserEntity.twitter_id == twitter_id).all()
+        #
+        #     return user[0]
+        # except Exception as ex:
+        #     print("Exception:{}".format(ex))
+        #     return None
+        user = session.query(UserEntity).filter(UserEntity.twitter_id == twitter_id).all()
+        if len(user) != 0:
+            return user[0]
+        else:
+            return None
+
 
     def create(self, user_entity):
         """
@@ -99,19 +111,13 @@ class UserService(object):
         :param user_entiy: UserEntity
         :return: 正常終了：ok , 例外発生：error
         """
-        a = user_entity["name"]
-        user = UserEntity(name=f"{a}")
-        session.add(user)
-        session.commit()
-        return "success"
-
-        # users = session.query(UserEntity).all()
-        # user_info=[]
-        # for user in users:
-        #     user_change = user.user_entity_dict()
-        #     user_info.append(user_change)
-        # user_info.append(user_entiy)
-        # return user_info
+        try:
+            session.add(user_entity)
+            session.commit()
+            return "ok"
+        except Exception as ex:
+            print("Exception:{}".format(ex))
+            return "error"
 
     def update(self,upd_user_entity,id):
         """
