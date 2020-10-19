@@ -3,6 +3,9 @@ db/log
 
 vueproject/node_modules
 vueproject/n_modules
+flaskproject/__pycache__
+flaskproject/model/__pycache__
+flaskproject/develop/__pycache__
 
 .DS_Store
 
