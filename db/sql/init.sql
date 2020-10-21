@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS autumn_hack.task
 	 id               int auto_increment primary key,
     title             varchar(100)  not null,
     tweet             int default 0 null,
+    mail              varchar(100)  not null,
     deadline_at       timestamp     null,
     create_at         timestamp     null,
     update_at         timestamp     null,
@@ -31,9 +32,9 @@ CREATE TABLE IF NOT EXISTS autumn_hack.task
 INSERT INTO autumn_hack.user (id, name, twitter_id, access_token, access_token_secret, secret_word, create_at, update_at) VALUES (1, '田中', 'dummy_id', 'tmp_toke_najofjadjfoiaj', 'tmp_token_secret_dfajdofijadjf', '実は○○なんです...', '2020-10-14 04:31:41', '2020-10-14 04:32:40');
 INSERT INTO autumn_hack.user (id, name, twitter_id, secret_word, create_at, update_at) VALUES (2, 'tama', 'dummy_id2', '昔XXをやらかしました', '2020-10-14 04:33:59', '2020-10-14 04:34:03');
 
-INSERT INTO autumn_hack.task (id, title, tweet, deadline_at,  create_at, update_at, user_id) VALUES (1, '課題を終わらせる', 0, '2020-10-17 18:20:00', '2020-10-14 04:20:49', '2020-10-14 04:21:23', 1);
-INSERT INTO autumn_hack.task (id, title, tweet, deadline_at,  create_at, update_at, user_id) VALUES (2, '朝7時30分に起きる', 1, '2020-10-18 07:30:00', '2020-10-14 04:23:13', '2020-10-14 04:23:18', 2);
-INSERT INTO autumn_hack.task (id, title, tweet, deadline_at,  create_at, update_at, user_id) VALUES (3, '朝7時30分に起きる', 1, '2020-10-18 07:30:00', '2020-10-14 04:23:13', '2020-10-14 04:23:18', 2);
+INSERT INTO autumn_hack.task (id, title, tweet, mail, deadline_at,  create_at, update_at, user_id) VALUES (1, '課題を終わらせる', 0, 'aaa@mail.com','2020-10-17 18:20:00', '2020-10-14 04:20:49', '2020-10-14 04:21:23', 1);
+INSERT INTO autumn_hack.task (id, title, tweet, mail, deadline_at,  create_at, update_at, user_id) VALUES (2, '朝7時30分に起きる', 1, 'aaa@mail.com','2020-10-18 07:30:00', '2020-10-14 04:23:13', '2020-10-14 04:23:18', 2);
+INSERT INTO autumn_hack.task (id, title, tweet, mail, deadline_at,  create_at, update_at, user_id) VALUES (3, '朝7時30分に起きる', 1, 'aaa@mail.com','2020-10-18 07:30:00', '2020-10-14 04:23:13', '2020-10-14 04:23:18', 2);
 
 
 

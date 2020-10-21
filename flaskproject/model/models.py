@@ -57,6 +57,7 @@ class TaskEntity(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String(100))
     tweet = sqlalchemy.Column(sqlalchemy.Integer)
+    mail = sqlalchemy.Column(sqlalchemy.String(100))
     deadline_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     create_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     update_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
@@ -69,6 +70,7 @@ class TaskEntity(Base):
             'id': self.id,
             'title': self.title,
             'tweet': self.tweet,
+            'mail' : self.mail,
             'deadline_at': self.deadline_at,
             'create_at': self.create_at,
             'update_at': self.update_at,
@@ -208,6 +210,7 @@ class TaskService(object):
             task = self.find(upd_task_entity.id)[0]
             task.title = upd_task_entity.title
             task.tweet = upd_task_entity.tweet
+            task.mail = upd_task_entity.mail
             task.deadline_at = upd_task_entity.deadline_at
             task.update_at = datetime.now()
             new_task = session.query(TaskEntity).filter(

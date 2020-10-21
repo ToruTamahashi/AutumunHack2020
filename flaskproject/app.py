@@ -84,6 +84,7 @@ def create_task():
     te = TaskEntity()
     te.title = param['title']
     te.tweet = param['tweet']
+    te.mail = param['mail']
     te.deadline_at = param['deadline_at']
     te.user_id = 1
     ts = TaskService()
@@ -101,6 +102,7 @@ def update_task():
     task.id = param['id']
     task.title = param['title']
     task.tweet = param['tweet']
+    task.mail = param['mail']
     task.deadline_at = param['deadline_at']
     ts = TaskService()
     return ts.update(task)
