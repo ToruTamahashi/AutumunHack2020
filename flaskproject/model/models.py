@@ -1,8 +1,10 @@
+from datetime import datetime
+
 import sqlalchemy
-from datetime import datetime, timedelta, timezone
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 from sqlalchemy.orm import relationship
+
 
 USERNAME = 'root'
 PASSWORD = 'root'
@@ -28,6 +30,8 @@ class UserEntity(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String(30))
     twitter_id = sqlalchemy.Column(sqlalchemy.String(30))
+    access_token = sqlalchemy.Column(sqlalchemy.String(255))
+    access_token_secret = sqlalchemy.Column(sqlalchemy.String(255))
     secret_word = sqlalchemy.Column(sqlalchemy.String(255))
     create_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     update_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
@@ -39,6 +43,8 @@ class UserEntity(Base):
             'id': self.id,
             'name': self.name,
             'twitter_id': self.twitter_id,
+            'access_token': self.access_token,
+            'access_token_secret':self.access_token_secret,
             'secret_word': self.secret_word,
             'create_at': self.create_at,
             'update_at': self.update_at,
@@ -50,7 +56,8 @@ class TaskEntity(Base):
     __tablename__ = 'task'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String(100))
-    declaration_tweet = sqlalchemy.Column(sqlalchemy.Integer)
+    tweet = sqlalchemy.Column(sqlalchemy.Integer)
+    mail = sqlalchemy.Column(sqlalchemy.String(100))
     deadline_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     create_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
     update_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP)
@@ -62,7 +69,8 @@ class TaskEntity(Base):
         return {
             'id': self.id,
             'title': self.title,
-            'declaration_tweet': self.declaration_tweet,
+            'tweet': self.tweet,
+            'mail' : self.mail,
             'deadline_at': self.deadline_at,
             'create_at': self.create_at,
             'update_at': self.update_at,
@@ -162,51 +170,57 @@ class TaskService(object):
         """
           #  taskテーブルから該当するidを持つ行を取得
         :param id: int
-        :return: TaskEntity
+        :return: List(TaskEntity)
         """
-        # idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        tasks = session.query(TaskEntity).all()
-        task_info=[]
-        for task in tasks:
-            task_change = task.task_entity_dict()
-            if task_change['user_id'] == int(id):
-                task_info.append(task_change)
-                print("in data")
-            else:
-                print("no data")
-        return task_info
+        tasks = session.query(TaskEntity).filter(
+            TaskEntity.user_id == id).all()
+        if len(tasks) != 0:
+            return tasks
+        else:
+            return None
+
 
     def create(self, task_entity):
         """
           # taskテーブル挿入
         :param task_entiy: TaskEntity
-        :return: 正常終了：ok , 例外発生：error
+        :return: 正常終了：ture , 例外発生：false
         """
-        # 現在時刻を取得
-        JST = timezone(timedelta(hours=+9), 'JST')
-        time_now = datetime.now(JST).strftime('%Y/%m/%d/%H:%M:%S')
-        a = task_entity["title"]
-        task = TaskEntity(title=f"{a}",create_at=f"{time_now}")
-        session.add(task)
-        session.commit()
-        return "success"
+        try:
+            task_entity.create_at = datetime.now()
+            task_entity.update_at = datetime.now()
+            session.add(task_entity)
+            session.commit()
+            return "true"
+        except Exception as ex:
+            print("Exception:{}".format(ex))
+            return "false"
 
 
-    def update(self,upd_task_entity,id):
+
+
+    def update(self,upd_task_entity):
         """
          # userテーブルを更新
         :param upd_task_entity: TaskEntity
         :param id: int
-        :return: 正常終了：updしたid,  例外発生：error
+        :return: 正常終了：true  例外発生：false
         """
-        JST = timezone(timedelta(hours=+9), 'JST')
-        time_now = datetime.now(JST).strftime('%Y/%m/%d/%H:%M:%S')
-        task = session.query(TaskEntity).get(int(id))
-        a = upd_task_entity["title"]
-        task.title = a
-        task.update_at = time_now
-        session.commit()
-        return "success"
+        try:
+            task = self.find(upd_task_entity.id)[0]
+            task.title = upd_task_entity.title
+            task.tweet = upd_task_entity.tweet
+            task.mail = upd_task_entity.mail
+            task.deadline_at = upd_task_entity.deadline_at
+            task.update_at = datetime.now()
+            new_task = session.query(TaskEntity).filter(
+                TaskEntity.id == task.id).first()
+            new_task = new_task
+            session.commit()
+            return 'true'
+        except Exception as ex:
+            print("Exception:{}".format(ex))
+            return 'false'
 
 
     def delete(self, id):
@@ -215,8 +229,11 @@ class TaskService(object):
         :param id: int
         :return: 正常終了：削除したid  例外発生：error
         """
-        task = session.query(TaskEntity).get(int(id))
-        session.delete(task)
-        session.commit()
-        return "success"
-
+        try:
+            task = session.query(TaskEntity).get(int(id))
+            session.delete(task)
+            session.commit()
+            return "true"
+        except Exception as ex:
+            print("Exception:{}".format(ex))
+            return 'false'

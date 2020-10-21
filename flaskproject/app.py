@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from flask_cors import CORS
-import  tweepy
+import tweepy
 from .model.models import UserEntity
 from .model.models import TaskEntity
 from .model.models import UserService
@@ -54,16 +54,69 @@ def show_json():
     ts = TaskService()
     a = ts.find_all()
     print(a[0]["id"])
-    #a_dict = {key: value for key, value in a.__dict__.items()}
     return jsonify(str(a))
 
-@app.route('/task/<id>')
-def id_world(id):
+
+@app.route('/read/tasks', methods=['GET'])
+def read_user_tasks():
+    """
+     指定のuser_idをもつタスクをtaskテーブルから全件取得
+    :return:json [{'id':1,'title':'***',...}, {'id':3,'title':'***',...},...]
+    """
+    param = request.get_json(force = True)
     ts = TaskService()
-    a = ts.find(id)
-    # print(a[0])
-    return jsonify(str(a))
-    # return jsonify(str(a))
+    #task_list = ts.find(param['user_id'])
+    task_list = ts.find(1)
+    task_dict_list=[]
+    for i, task in enumerate(task_list):
+        print(i, task)
+        task_dict_list.append(task.task_entity_dict())
+    return jsonify(task_dict_list)
+
+@app.route('/create/task', methods=['POST'])
+def create_task():
+    """
+    taskテーブルにタスクを追加する
+    :param json ex) {'title':'***','tweet':*,'mail':'***@***.com','deadline_at':'2020/10/31/06:22:18'}
+    :return:true,false
+    """
+    param = request.get_json(force=True)
+    te = TaskEntity()
+    te.title = param['title']
+    te.tweet = param['tweet']
+    te.mail = param['mail']
+    te.deadline_at = param['deadline_at']
+    te.user_id = 1
+    ts = TaskService()
+    return ts.create(te)
+
+@app.route('/update/task', methods=['PUT'])
+def update_task():
+    """
+    taskテーブルのタスクを更新する
+    :param json ex) {'id':1,'title':'***','tweet':*,'mail':'***@***.com','deadline_at':'2020/10/31/06:22:18'}
+    :return:true,false
+    """
+    param = request.get_json(force=True)
+    task = TaskEntity()
+    task.id = param['id']
+    task.title = param['title']
+    task.tweet = param['tweet']
+    task.mail = param['mail']
+    task.deadline_at = param['deadline_at']
+    ts = TaskService()
+    return ts.update(task)
+
+@app.route('/destroy/task', methods=['Delete'])
+def destroy_task():
+    """
+        taskテーブルのタスクを削除する
+        :param json ex) {'id':1}
+        :return:true,false
+        """
+    param = request.get_json(force=True)
+    ts = TaskService()
+    return ts.delete(param['id'])
 
 @app.route('/req')
 def self_request():
