@@ -61,12 +61,12 @@ def show_json():
 def read_user_tasks():
     """
      指定のuser_idをもつタスクをtaskテーブルから全件取得
-    :param int ex) {'user_id':1}
     :return:json [{'id':1,'title':'***',...}, {'id':3,'title':'***',...},...]
     """
     param = request.get_json(force = True)
     ts = TaskService()
-    task_list = ts.find(param['user_id'])
+    #task_list = ts.find(param['user_id'])
+    task_list = ts.find(1)
     task_dict_list=[]
     for i, task in enumerate(task_list):
         print(i, task)
