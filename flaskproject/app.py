@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from flask_cors import CORS
-import  tweepy
+import tweepy
 from .model.models import UserEntity
 from .model.models import TaskEntity
 from .model.models import UserService
