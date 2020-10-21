@@ -77,7 +77,7 @@ def read_user_tasks():
 def create_task():
     """
     taskテーブルにタスクを追加する
-    :param json ex) {'title':'***','tweet':*,'deadline_at':'2020/10/31/06:22:18'}
+    :param json ex) {'title':'***','tweet':*,'mail':'***@***.com','deadline_at':'2020/10/31/06:22:18'}
     :return:true,false
     """
     param = request.get_json(force=True)
@@ -94,7 +94,7 @@ def create_task():
 def update_task():
     """
     taskテーブルのタスクを更新する
-    :param json ex) {'id':1,'title':'***','tweet':*,'deadline_at':'2020/10/31/06:22:18'}
+    :param json ex) {'id':1,'title':'***','tweet':*,'mail':'***@***.com','deadline_at':'2020/10/31/06:22:18'}
     :return:true,false
     """
     param = request.get_json(force=True)
