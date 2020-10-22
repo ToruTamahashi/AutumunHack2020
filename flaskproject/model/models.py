@@ -44,7 +44,7 @@ class UserEntity(Base):
             'name': self.name,
             'twitter_id': self.twitter_id,
             'access_token': self.access_token,
-            'access_token_secret':self.access_token_secret,
+            'access_token_secret': self.access_token_secret,
             'secret_word': self.secret_word,
             'create_at': self.create_at,
             'update_at': self.update_at,
@@ -175,6 +175,8 @@ class TaskService(object):
         tasks = session.query(TaskEntity).filter(
             TaskEntity.user_id == id).all()
         if len(tasks) != 0:
+            print("aaa")
+            print(type(tasks[0].deadline_at))
             return tasks
         else:
             return None
