@@ -63,13 +63,14 @@ def read_user_tasks():
      指定のuser_idをもつタスクをtaskテーブルから全件取得
     :return:json [{'id':1,'title':'***',...}, {'id':3,'title':'***',...},...]
     """
-    param = request.get_json(force = True)
+    #param = request.get_json(force = True)
     ts = TaskService()
     #task_list = ts.find(param['user_id'])
     task_list = ts.find(1)
     task_dict_list=[]
     for i, task in enumerate(task_list):
         print(i, task)
+        task.deadline_at = translate_datetime(task.deadline_at)
         task_dict_list.append(task.task_entity_dict())
     return jsonify(task_dict_list)
 
@@ -177,6 +178,9 @@ def get_access_token():
 def get_task():
     #twitter.post_tweet()
     return "b"
+
+def translate_datetime(value):
+    return value.strftime('%Y/%m/%d/%H:%M:%S')
 
 
 
