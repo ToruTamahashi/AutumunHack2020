@@ -25,3 +25,14 @@ def post_req():
     )
     print(r.text)
     return r
+
+def oauth_test():
+    r = requests.get(
+        'http://localhost:5000/login'
+    )
+    print(r.text)
+    redirect_url = r.text
+    param = redirect_url.split('&')
+    oauth_verifier = param[1].split('=')
+    print(oauth_verifier)
+    return r

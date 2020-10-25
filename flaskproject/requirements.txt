@@ -4,3 +4,4 @@ sqlalchemy
 #mysql-connector-python
 pymysql
 flask-cors
+tweepy
