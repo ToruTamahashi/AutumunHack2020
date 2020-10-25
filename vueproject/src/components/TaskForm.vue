@@ -93,15 +93,15 @@ export default {
     },
     submit() {
       // axiosで送信処理をする
-      axios.post("/task/create/add", {
-        task: this.task,
-        email: this.email,
-        deadLine: this.fullDateString,
-        tweet: this.checkbox,
-        tweetedExpiredTask: 0
-      }).then(res => {
-        this.responseTaskList = res.data
-        this.passTaskListAfterAddTask(res.data)
+      axios.post("http://localhost:5000/create/task", {
+        title: this.task,
+        mail: this.email,
+        deadline_at: this.fullDateString,
+        tweet: this.booleanToNumber(), // タスク追加時にツイートするか
+        tweetedExpiredTask: 0, // 既に期限切れタスクとしてツイートしたか
+        user_id: 1
+      }).then(() => {
+        this.addedTask()
       })
       this.task = "";
       this.email = "";
@@ -122,6 +122,16 @@ export default {
     },
     passTaskListAfterAddTask(data) {
       this.$emit("passTaskListAfterAddTask", data)
+    },
+    addedTask() {
+      this.$emit("addedTask")
+    },
+    booleanToNumber() {
+      if (this.checkbox) {
+        return 1
+      } else {
+        return 0
+      }
     }
   },
 };
