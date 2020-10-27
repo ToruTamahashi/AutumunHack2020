@@ -1,22 +1,21 @@
 from datetime import datetime
-
 import sqlalchemy
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 from sqlalchemy.orm import relationship
 
+from ..config import DB_USERNAME
+from ..config import DB_PASS
+from ..config import DB_HOST
+from ..config import DB_PORT
+from ..config import DB_NAME
 
-USERNAME = 'root'
-PASSWORD = 'root'
-HOST = 'db'
-PORT = '3306'
-DATABASE = 'autumn_hack'
 
-# USERNAME = 'root'
-# PASSWORD = 'root'
-# HOST = 'localhost'
-# PORT = '3333'
-# DATABASE = 'autumn_hack'
+USERNAME = DB_USERNAME
+PASSWORD = DB_PASS
+HOST = DB_HOST
+PORT = DB_PORT
+DATABASE = DB_NAME
 
 url = 'mysql+pymysql://{}:{}@{}:{}/{}?charset=utf8mb4'.format(USERNAME, PASSWORD, HOST, PORT, DATABASE)
 #url = 'mysql+pymysql://root:root@localhost:3333/autumn_hack?charset=utf8'
@@ -30,6 +29,7 @@ class UserEntity(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String(30))
     twitter_id = sqlalchemy.Column(sqlalchemy.String(30))
+    session_id = sqlalchemy.Column(sqlalchemy.String(100))
     access_token = sqlalchemy.Column(sqlalchemy.String(255))
     access_token_secret = sqlalchemy.Column(sqlalchemy.String(255))
     secret_word = sqlalchemy.Column(sqlalchemy.String(255))
@@ -43,6 +43,7 @@ class UserEntity(Base):
             'id': self.id,
             'name': self.name,
             'twitter_id': self.twitter_id,
+            'session_id': self.session_id,
             'access_token': self.access_token,
             'access_token_secret': self.access_token_secret,
             'secret_word': self.secret_word,
@@ -94,24 +95,31 @@ class UserService(object):
 
     def find(self, twitter_id):
         """
-          #  userテーブルから該当するidを持つ行を取得
-        :param id: int
+          #  userテーブルから該当するtwitter_idを持つ行を取得
+        :param twitter_id: String
         :return: UserEntity
         """
         # twitter_idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
-        # try:
-        #     user = session.query(UserEntity).filter(UserEntity.twitter_id == twitter_id).all()
-        #
-        #     return user[0]
-        # except Exception as ex:
-        #     print("Exception:{}".format(ex))
-        #     return None
         user = session.query(UserEntity).filter(UserEntity.twitter_id == twitter_id).all()
         if len(user) != 0:
             return user[0]
         else:
             return None
 
+
+    def findBySessionID(self, session_id):
+        """
+          #  userテーブルから該当するtwitter_idを持つ行を取得
+         :param session_id: String
+         :return: UserEntity
+        """
+        # twitter_idが一致する行を全権取得（でもidはユニークなので1つしか取得されない）
+        user = session.query(UserEntity).filter(
+            UserEntity.session_id == session_id).all()
+        if len(user) != 0:
+            return user[0]
+        else:
+            return None
 
     def create(self, user_entity):
         """
@@ -127,18 +135,33 @@ class UserService(object):
             print("Exception:{}".format(ex))
             return "error"
 
-    def update(self,upd_user_entity,id):
+    def update(self,upd_user_entity):
         """
          # userテーブルを更新
         :param upd_user_entity: UserEntity
         :param id: int
         :return: 正常終了：updしたid,  例外発生：error
         """
-        # userテーブルから指定のidに該当する行を更新
-        user = session.query(UserEntity).get(int(id))
-        up_user = user.user_entity_dict()
-        up_user = upd_user_entity
-        return up_user
+
+        try:
+            # userテーブルから指定のidに該当する行を更新
+            user = self.find(upd_user_entity.twitter_id)
+            user.name = upd_user_entity.name
+            user.twitter_id = upd_user_entity.twitter_id
+            user.session_id = upd_user_entity.session_id
+            user.access_token = upd_user_entity.access_token
+            user.access_token_secret = upd_user_entity.access_token_secret
+            user.secret_word = upd_user_entity.secret_word
+            user.update_at = datetime.now()
+            new_user = session.query(UserEntity).filter(
+                UserEntity.id == user.id).first()
+            new_user = new_user
+            session.commit()
+            return 'true'
+        except Exception as ex:
+            print("Exception:{}".format(ex))
+            return 'false'
+
 
     def delete(self, id):
         """
@@ -186,17 +209,17 @@ class TaskService(object):
         """
           # taskテーブル挿入
         :param task_entiy: TaskEntity
-        :return: 正常終了：ture , 例外発生：false
+        :return: json ex) {'result':'success'} or {'result':'failure'}
         """
         try:
             task_entity.create_at = datetime.now()
             task_entity.update_at = datetime.now()
             session.add(task_entity)
             session.commit()
-            return "true"
+            return {'result':'success'}
         except Exception as ex:
             print("Exception:{}".format(ex))
-            return "false"
+            return {'result':'failure'}
 
 
 
@@ -205,8 +228,7 @@ class TaskService(object):
         """
          # userテーブルを更新
         :param upd_task_entity: TaskEntity
-        :param id: int
-        :return: 正常終了：true  例外発生：false
+        :return: json ex) {'result':'success'} or {'result':'failure'}
         """
         try:
             task = self.find(upd_task_entity.id)[0]
@@ -219,23 +241,23 @@ class TaskService(object):
                 TaskEntity.id == task.id).first()
             new_task = new_task
             session.commit()
-            return 'true'
+            return {'result':'success'}
         except Exception as ex:
             print("Exception:{}".format(ex))
-            return 'false'
+            return {'result':'failure'}
 
 
     def delete(self, id):
         """
           # taskテーブルから指定のidを持つ行を削除
         :param id: int
-        :return: 正常終了：削除したid  例外発生：error
+        :return: json ex) {'result':'success'} or {'result':'failure'}
         """
         try:
             task = session.query(TaskEntity).get(int(id))
             session.delete(task)
             session.commit()
-            return "true"
+            return {'result':'success'}
         except Exception as ex:
             print("Exception:{}".format(ex))
-            return 'false'
+            return {'result':'failure'}

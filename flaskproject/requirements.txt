@@ -5,3 +5,4 @@ sqlalchemy
 pymysql
 flask-cors
 tweepy
+python-dotenv

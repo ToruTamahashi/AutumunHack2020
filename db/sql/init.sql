@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS autumn_hack.user
 	id int auto_increment,
 	name VARCHAR(30) null,
 	twitter_id VARCHAR(30) null,
+	session_id VARCHAR(100) null,
 	access_token VARCHAR(255) null,
 	access_token_secret VARCHAR(255) null,
 	secret_word VARCHAR(30),
