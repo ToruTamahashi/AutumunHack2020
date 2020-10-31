@@ -27,6 +27,9 @@
               @submitFromTaskForm="save"
               @closeFromTaskForm="close"
               @addedTask="fetchTasks"
+              @updated="updated"
+              :editTask="editTask"
+              :editForm="editForm"
             />
           </v-card>
         </v-dialog>
@@ -108,7 +111,9 @@ export default {
     },
     now: new Date(),
     taskData: [],
-    tasks: []
+    tasks: [],
+    editTask: {},
+    editForm: false
   }),
   computed: {
     formTitle() {
@@ -129,9 +134,12 @@ export default {
     axios.get("http://localhost:5000/read/tasks").then((res) => {
       res.data.forEach((task) => {
         this.tasks.push({
-          name: task.title,
-          limit: this.msToTime(new Date(task.deadline_at)),
           id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
         });
       });
     });
@@ -163,6 +171,8 @@ export default {
     editItem(item) {
       this.editedIndex = this.tasks.indexOf(item);
       this.editedItem = Object.assign({}, item);
+      this.editTask = this.tasks[this.editedIndex]
+      this.editForm = true
       this.dialog = true;
     },
 
@@ -171,22 +181,22 @@ export default {
       this.editedIndex = this.tasks.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
-      axios.delete(`/task/delete/${item.id}`).then((res) => {
-        res.data.forEach((task) => {
-          this.tasks = [];
-          this.tasks.push({
-            name: task.name,
-            limit: this.msToTime(new Date(task.deadLine)),
-            id: task.id,
-          });
-        });
-      });
     },
 
     deleteItemConfirm() {
-      this.tasks.splice(this.editedIndex, 1);
+      const deleteTaskId = this.tasks[this.editedIndex].id;
+      console.log(deleteTaskId);
+      axios
+        .delete("http://localhost:5000/destroy/task", { id: deleteTaskId })
+        .then(() => {
+          this.tasks = [];
+          this.fetchTasks();
+        })
+        .catch((e) => {
+          console.log(e.message);
+        });
       if (this.checkbox) {
-        console.log("Tweet task complete!");
+        console.log("Tweeted task done!");
       }
       this.closeDelete();
     },
@@ -208,15 +218,12 @@ export default {
     },
 
     save() {
-      if (this.editedIndex > -1) {
-        // 編集
-        Object.assign(this.tasks[this.editedIndex], this.editedItem);
-      } else {
-        // 新規投稿
-        this.tasks.push(this.editedItem);
-        this.$refs.taskform.submit();
-      }
-      this.close();
+      this.$refs.taskform.submit();
+      this.close(); // formを閉じる
+    },
+
+    updated() {
+      this.editForm = false
     },
 
     msToTime(date) {
@@ -278,25 +285,31 @@ export default {
       this.tasks = [];
       data.forEach((task) => {
         this.tasks.push({
-          name: task.name,
-          limit: this.msToTime(new Date(task.deadLine)),
           id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
         });
       });
     },
 
     fetchTasks() {
-      this.tasks = []
+      this.tasks = [];
       axios.get("http://localhost:5000/read/tasks").then((res) => {
-      res.data.forEach((task) => {
-        this.tasks.push({
-          name: task.title,
-          limit: this.msToTime(new Date(task.deadline_at)),
+        res.data.forEach((task) => {
+          this.tasks.push({
           id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
+        });
         });
       });
-    });
-    }
+    },
   },
 };
 </script>
