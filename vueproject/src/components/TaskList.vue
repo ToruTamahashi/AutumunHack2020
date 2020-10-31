@@ -131,7 +131,8 @@ export default {
     // },
   },
   created() {
-    axios.get("http://localhost:5000/read/tasks").then((res) => {
+    axios.get("http://localhost:5000/read/tasks")
+    .then((res) => {
       res.data.forEach((task) => {
         this.tasks.push({
           id: task.id,
@@ -142,7 +143,10 @@ export default {
           tweet: task.tweet
         });
       });
-    });
+    })
+    .catch(e => {
+      console.log(e.message)
+    })
     // this.sendOauthVerifier(this.$route.query.oauth_verifier);
 
     this.findExpiredTask();
@@ -187,7 +191,7 @@ export default {
       const deleteTaskId = this.tasks[this.editedIndex].id;
       console.log(deleteTaskId);
       axios
-        .delete("http://localhost:5000/destroy/task", { id: deleteTaskId })
+        .post("http://localhost:5000/destroy/task", { id: deleteTaskId })
         .then(() => {
           this.tasks = [];
           this.fetchTasks();

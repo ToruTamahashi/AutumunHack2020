@@ -134,7 +134,7 @@ export default {
     },
     updateTask() {
       axios
-        .put("http://localhost:5000/update/task", {
+        .post("http://localhost:5000/update/task", {
           id: this.editTask.id,
           title: this.task,
           mail: this.email,
