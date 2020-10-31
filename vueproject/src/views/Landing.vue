@@ -18,7 +18,7 @@
             自分を追い込むたった一つの方法
           </h1>
           <p class="mb-10 font-weight-black white--text">
-            当サービスは、秘密を書き込み決められた時間にタスクが終わらな買った場合、強制的にTwitterに書き込まれるクレイジーでストイックなサービスです。
+            当サービスは、秘密を書き込み決められた時間にタスクが終わらなかった場合、強制的にTwitterに書き込まれるクレイジーでストイックなサービスです。
           </p>
           <v-btn
             @click="getCreateUrl()"
@@ -37,10 +37,23 @@
 </template>
 
 <script>
+  import axios from 'axios'
 export default {
   methods: {
     getCreateUrl() {
-      location.href = "https://google.com"
+      axios.get('http://localhost:5000/session',{ withCredentials: true })
+            .then(response => {
+              console.log(response.data.url);
+              if (response.data.cookie == 'none') {
+                location.href = response.data.url
+              }else{
+                location.href = 'http://localhost:8888/top'
+              }
+            })
+            .catch(response => {
+              console.log(response);
+              alert("データの取得に失敗しました。");
+            })
     }
   }
 };

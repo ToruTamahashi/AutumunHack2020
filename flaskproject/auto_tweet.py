@@ -1,7 +1,14 @@
+from datetime import datetime
 import tweepy
 import urllib
-from ..model.models import UserEntity
-from ..model.models import UserService
+from flask import jsonify
+from flask import make_response,request
+
+from .model.models import UserEntity
+from .model.models import UserService
+
+from .config import CONSUMER_KEY
+from .config import CONSUMER_SECRET
 
 class TwAPI(object):
 
@@ -11,9 +18,8 @@ class TwAPI(object):
         return "done"
 
     def get_user_info(self,AT,AS):
-        CK = "4KdK0UdVS9WvmvNsl17mWbyt4"
-        CS = "aIyPNAtCmqblwFlWhNjPbswXM7WVzig2AZcp8AtiNvkompbErY"
-
+        CK = CONSUMER_KEY
+        CS = CONSUMER_SECRET
         # Twitterオブジェクトの生成
         auth = tweepy.OAuthHandler(CK, CS)
         auth.set_access_token(AT, AS)
@@ -24,8 +30,8 @@ class TwAPI(object):
         return user
 
     def regist_user_info(self,AT,AS):
-        CK = "4KdK0UdVS9WvmvNsl17mWbyt4"
-        CS = "aIyPNAtCmqblwFlWhNjPbswXM7WVzig2AZcp8AtiNvkompbErY"
+        CK = CONSUMER_KEY
+        CS = CONSUMER_SECRET
 
         # Twitterオブジェクトの生成
         auth = tweepy.OAuthHandler(CK, CS)
@@ -44,8 +50,10 @@ class TwAPI(object):
             ue = UserEntity()
             ue.name = name
             ue.twitter_id = twitter_id
+            ue.access_token = AT
+            ue.access_token_secret = AS
             us.create(ue)
-        return "ok"
+        return twitter_id
 
 
     
@@ -53,12 +61,12 @@ class TwAPI(object):
 class OAuthTwitter(object):
     """docstring for OAuthTwitter"""
     def __init__(self):
-        self.CONSUMER_KEY = "4KdK0UdVS9WvmvNsl17mWbyt4"
-        self.CONSUMER_SECRET = "aIyPNAtCmqblwFlWhNjPbswXM7WVzig2AZcp8AtiNvkompbErY"
+        self.CK = CONSUMER_KEY
+        self.CS = CONSUMER_SECRET
         self.Access_Token=None
         self.Access_Token_Secret=None
         # Twitterオブジェクトの生成
-        self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
+        self.auth = tweepy.OAuthHandler(self.CK, self.CS)
 
     # def get_oauth_token(url:str)->str:
     #     querys = urllib.parse.urlparse(url).query
@@ -105,16 +113,17 @@ class OAuthTwitter(object):
         self.Access_Token_Secret = self.auth.access_token_secret
 
         # self.auth.set_access_token(self.Access_Token, self.Access_Token_Secret)
-        # self.auth = tweepy.OAuthHandler(self.CONSUMER_KEY, self.CONSUMER_SECRET)
+        # self.auth = tweepy.OAuthHandler(self.CK, self.CS)
         # self.api = tweepy.API(self.auth)
 
         # ユーザ情報の登録
         tw = TwAPI()
-        tw.regist_user_info(self.Access_Token,self.Access_Token_Secret)
+        twitter_id = tw.regist_user_info(self.Access_Token,self.Access_Token_Secret)
+
 
         print("DONE")
         access_token = {"access_token_key":self.Access_Token, "access_token_secret":self.Access_Token_Secret}
-        return access_token
+        return twitter_id
         
 
 

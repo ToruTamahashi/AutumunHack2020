@@ -6,7 +6,7 @@ vueproject/n_modules
 flaskproject/__pycache__
 flaskproject/model/__pycache__
 flaskproject/develop/__pycache__
-
+flaskproject/.env
 .DS_Store
 
 
