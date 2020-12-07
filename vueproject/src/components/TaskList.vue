@@ -26,7 +26,10 @@
               ref="taskform"
               @submitFromTaskForm="save"
               @closeFromTaskForm="close"
-              @passTaskListAfterAddTask="updateTaskListAfterAddTask"
+              @addedTask="fetchTasks"
+              @updated="updated"
+              :editTask="editTask"
+              :editForm="editForm"
             />
           </v-card>
         </v-dialog>
@@ -61,9 +64,6 @@
     <template v-slot:item.actions="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
       <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
-    </template>
-    <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize"> Reset </v-btn>
     </template>
   </v-data-table>
 </template>
@@ -111,66 +111,45 @@ export default {
     },
     now: new Date(),
     taskData: [],
+    tasks: [],
+    editTask: {},
+    editForm: false
   }),
-  created() {
-    axios.get("/json").then((res) => {
-      res.data.forEach((task) => {
-        this.tasks.push({
-          name: task.name,
-          limit: this.msToTime(new Date(task.deadLine)),
-          id: task.id,
-        });
-      });
-    });
-    this.sendOauthVerifier(this.$route.query.oauth_verifier);
-
-    this.findExpiredTask();
-  },
-
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
     },
 
-    tasks() {
-      return [
-        {
-          name: "課題",
-          limit: this.msToTime(new Date("2020/10/16/12:30:00")),
-          id: 1,
-        },
-        {
-          name: "プログラミングする",
-          limit: this.msToTime(new Date("2020/10/21/9:30:00")),
-          id: 2,
-        },
-        {
-          name: "ES提出",
-          limit: this.msToTime(new Date("2020/10/21/11:22:00")),
-          id: 3,
-        },
-        {
-          name: "英単語100個",
-          limit: this.msToTime(new Date("2020/10/21/17:00:00")),
-          id: 4,
-        },
-        {
-          name: "書類提出",
-          limit: this.msToTime(new Date("2020/10/21/10:25:00")),
-          id: 5,
-        },
-        {
-          name: "ランニング10km",
-          limit: this.msToTime(new Date("2020/10/21/9:40:00")),
-          id: 6,
-        },
-        {
-          name: "友達と遊ぶ",
-          limit: this.msToTime(new Date("2020/10/21/22:00:30")),
-          id: 7,
-        },
-      ];
-    },
+    // tasks() {
+    //   return [
+    //     {
+    //       name: "課題",
+    //       limit: this.msToTime(new Date("2020/10/16/12:30:00")),
+    //       id: 1,
+    //     },
+    //   ];
+    // },
+  },
+  created() {
+    axios.get("http://localhost:5000/read/tasks")
+    .then((res) => {
+      res.data.forEach((task) => {
+        this.tasks.push({
+          id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
+        });
+      });
+    })
+    .catch(e => {
+      console.log(e.message)
+    })
+    // this.sendOauthVerifier(this.$route.query.oauth_verifier);
+
+    this.findExpiredTask();
   },
 
   watch: {
@@ -196,6 +175,8 @@ export default {
     editItem(item) {
       this.editedIndex = this.tasks.indexOf(item);
       this.editedItem = Object.assign({}, item);
+      this.editTask = this.tasks[this.editedIndex]
+      this.editForm = true
       this.dialog = true;
     },
 
@@ -204,24 +185,22 @@ export default {
       this.editedIndex = this.tasks.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogDelete = true;
-      axios
-        .delete(`/task/delete/${item.id}`)
-        .then((res) => {
-          res.data.forEach((task) => {
-            this.tasks = []
-            this.tasks.push({
-              name: task.name,
-              limit: this.msToTime(new Date(task.deadLine)),
-              id: task.id,
-            });
-          });
-        });
     },
 
     deleteItemConfirm() {
-      this.tasks.splice(this.editedIndex, 1);
+      const deleteTaskId = this.tasks[this.editedIndex].id;
+      console.log(deleteTaskId);
+      axios
+        .post("http://localhost:5000/destroy/task", { id: deleteTaskId })
+        .then(() => {
+          this.tasks = [];
+          this.fetchTasks();
+        })
+        .catch((e) => {
+          console.log(e.message);
+        });
       if (this.checkbox) {
-        console.log("Tweet task complete!");
+        console.log("Tweeted task done!");
       }
       this.closeDelete();
     },
@@ -243,15 +222,12 @@ export default {
     },
 
     save() {
-      if (this.editedIndex > -1) {
-        // 編集
-        Object.assign(this.tasks[this.editedIndex], this.editedItem);
-      } else {
-        // 新規投稿
-        this.tasks.push(this.editedItem);
-        this.$refs.taskform.submit();
-      }
-      this.close();
+      this.$refs.taskform.submit();
+      this.close(); // formを閉じる
+    },
+
+    updated() {
+      this.editForm = false
     },
 
     msToTime(date) {
@@ -298,26 +274,46 @@ export default {
       });
     },
 
-    sendOauthVerifier(query) {
-      axios
-        .post("link", {
-          token: query,
-        })
-        .then((res) => {
-          this.taskData = res;
-        });
-    },
+    // sendOauthVerifier(query) {
+    //   axios
+    //     .post("link", {
+    //       token: query,
+    //     })
+    //     .then((res) => {
+    //       this.taskData = res;
+    //     });
+    // },
 
-    updateTaskListAfterAddTask(data) { // 送信後のres.data
-    this.tasks = []
+    updateTaskListAfterAddTask(data) {
+      // 送信後のres.data
+      this.tasks = [];
       data.forEach((task) => {
         this.tasks.push({
-          name: task.name,
-          limit: this.msToTime(new Date(task.deadLine)),
           id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
         });
       });
-    }
+    },
+
+    fetchTasks() {
+      this.tasks = [];
+      axios.get("http://localhost:5000/read/tasks").then((res) => {
+        res.data.forEach((task) => {
+          this.tasks.push({
+          id: task.id,
+          user_id: task.user_id,
+          name: task.title,
+          mail: task.mail,
+          limit: this.msToTime(new Date(task.deadline_at)),
+          tweet: task.tweet
+        });
+        });
+      });
+    },
   },
 };
 </script>
